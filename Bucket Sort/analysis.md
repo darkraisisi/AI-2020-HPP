@@ -12,5 +12,3 @@ In de plot is te zien dat deze erg snel gaan.<br><br>
 
 De tijds-complexiteit is O(n^2)<br>
 Zie `Analyse.pdf` voor de beredenatie.
-
-## Opdracht 4:
