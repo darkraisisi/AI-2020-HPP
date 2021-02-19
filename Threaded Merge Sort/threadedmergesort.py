@@ -51,13 +51,14 @@ def splitList(lst:list,n:int):
 
 
 def test(nWorkers:int,length:int):
-    randomList = [random.randint(0,999) for _ in range(0,length)]
+    randomList = [random.randint(0,9999) for _ in range(0,length)]
     splt = splitList(randomList, nWorkers)
 
     with ThreadPoolExecutor(max_workers=nWorkers) as executor:
         results = executor.map(mergeSort, splt)
 
     results = list(results)
+
     while len(results) > 1:
         res = []
         for i in range(0,len(results)-1,2):
