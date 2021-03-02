@@ -5,6 +5,7 @@
 
 #include <stdio.h>      /* I/O stuff */
 #include <stdlib.h>     /* calloc, etc. */
+#include <omp.h>
 
 void readArray(char * fileName, double ** a, int * n);
 double sumArray(double * a, int numValues) ;
@@ -14,14 +15,19 @@ int main(int argc, char * argv[])
   int  howMany;
   double sum;
   double * a;
+  double start, end;
 
   if (argc != 2) {
     fprintf(stderr, "\n*** Usage: arraySum <inputFile>\n\n");
     exit(1);
   }
-  
   readArray(argv[1], &a, &howMany);
+
+  start = omp_get_wtime();
   sum = sumArray(a, howMany);
+  end = omp_get_wtime();
+
+  printf("Elasped time = %f sec\n", end - start);
   printf("The sum of the values in the input file '%s' is %g\n",
            argv[1], sum);
 
@@ -78,7 +84,7 @@ void readArray(char * fileName, double ** a, int * n) {
 double sumArray(double * a, int numValues) {
   int i;
   double result = 0.0;
-
+  #pragma omp parallel for private(i) reduction(+:result)
   for (i = 0; i < numValues; i++) {
     result += a[i];
   }
