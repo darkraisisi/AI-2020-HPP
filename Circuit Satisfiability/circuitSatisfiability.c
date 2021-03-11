@@ -12,24 +12,42 @@
 
 #include <stdio.h>     // printf()
 #include <limits.h>    // UINT_MAX
+#include <mpi.h> //time
 
 int checkCircuit (int, long);
 
-int main (int argc, char *argv[]) {
+int main (int argc, char** argv) {
+   
    long i;               // loop variable (64 bits) 
-   int id = 0;           // process id 
+   int id = -1;           // process id 
    int count = 0;        // number of solutions 
+   int numProcesses = -1;
+   int out = 0;
 
-   printf ("\nProcess %d is checking the circuit...\n", id);
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &id);
+	MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 
-   for (i = 0; i <= UINT_MAX; i++) {
-      count += checkCircuit (id, i);
+   double combinedTime = 0.0, startTime = 0.0, totalTime = 0.0;
+   startTime = MPI_Wtime();
+
+   for (i = id; i <=UINT_MAX; i += numProcesses) {
+      count += checkCircuit(id, i);
    }
 
-   printf ("Process %d finished.\n", id);
+   totalTime = MPI_Wtime() - startTime;
+
+   MPI_Allreduce(&totalTime, &combinedTime, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+   MPI_Allreduce(&count, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+   if(id == 0){
+      // combinedTime = combinedTime/numProcesses;
+      printf("Process %d finished in (average procces) time %f seconds.\n", id, (combinedTime/numProcesses));
+      printf("\nA total of %d solutions were found.\n\n", out);
+   }
    fflush (stdout);
 
-   printf("\nA total of %d solutions were found.\n\n", count);
+   MPI_Finalize();
    return 0;
 }
 
